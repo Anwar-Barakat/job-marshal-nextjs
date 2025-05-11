@@ -1,11 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
-import { ThemeToggle } from "@/components/ui/theme-toggle";
+import { ThemeToggle, UserButton, Logo } from "@/components/general";
 import { Container } from "@/components/ui/container";
-import { Logo } from "@/components/general/logo";
+import { getSession } from "next-auth/react";
+import type { Session } from "next-auth";
 
 const navigation = [
     { name: "Home", href: "/" },
@@ -16,6 +17,24 @@ const navigation = [
 
 export function Navbar() {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+    const [session, setSession] = useState<Session | null>(null);
+    const [isLoading, setIsLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchSession = async () => {
+            try {
+                const sessionData = await getSession();
+                setSession(sessionData);
+            } catch (error) {
+                console.error("Failed to fetch session:", error);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        fetchSession();
+    }, []);
+
     return (
         <nav className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 shadow-sm">
             <Container>
@@ -37,12 +56,18 @@ export function Navbar() {
                     <div className="flex items-center gap-2 sm:gap-4">
                         <nav className="flex items-center space-x-2 sm:space-x-3">
                             <ThemeToggle />
-                            <Link
-                                href="/login"
-                                className="inline-flex h-9 sm:h-10 items-center justify-center rounded-md bg-primary px-3 sm:px-5 py-2 text-sm font-medium text-primary-foreground shadow-sm transition-all hover:bg-primary/90 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50"
-                            >
-                                Sign in
-                            </Link>
+                            {isLoading ? (
+                                <div className="h-9 w-9 rounded-full bg-muted animate-pulse" />
+                            ) : session?.user ? (
+                                <UserButton session={session as Session & { user: { name: string; email: string; image?: string } }} />
+                            ) : (
+                                <Link
+                                    href="/login"
+                                    className="inline-flex h-9 sm:h-10 items-center justify-center rounded-md bg-primary px-3 sm:px-5 py-2 text-sm font-medium text-primary-foreground shadow-sm transition-all hover:bg-primary/90 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50"
+                                >
+                                    Sign in
+                                </Link>
+                            )}
                         </nav>
                         <button
                             type="button"
