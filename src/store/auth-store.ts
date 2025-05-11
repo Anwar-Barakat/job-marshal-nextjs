@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { signIn, signOut } from "@/utils/auth";
+import { signIn, signOut } from "next-auth/react";
 
 interface User {
   id: string;
@@ -26,7 +26,7 @@ export const useAuthStore = create<AuthState>((set) => ({
     try {
       set({ isLoading: true, error: null });
       await signIn(provider, {
-        redirectTo: "/",
+        callbackUrl: "/",
       });
     } catch (error) {
       set({
@@ -39,7 +39,7 @@ export const useAuthStore = create<AuthState>((set) => ({
   signOut: async () => {
     try {
       set({ isLoading: true, error: null });
-      await signOut();
+      await signOut({ callbackUrl: "/login" });
       set({ user: null });
     } catch (error) {
       set({

@@ -4,16 +4,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { GitHub, Google } from "@/components/icons";
 import { OAuthButton } from "@/components/ui/oauth-button";
 import { useAuthStore } from "@/store/auth-store";
-import { auth } from "@/utils/auth";
-import { redirect } from "next/navigation";
+import { useRouter } from "next/navigation";
 
-const LoginForm = async () => {
+const LoginForm = () => {
     const { signIn, isLoading, error } = useAuthStore();
-    const session = await auth();
-
-    if (session?.user) {
-        redirect("/");
-    }
+    const router = useRouter();
 
     return (
         <div className="flex flex-col gap-4">

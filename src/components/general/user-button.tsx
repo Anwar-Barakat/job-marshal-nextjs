@@ -27,30 +27,46 @@ interface UserButtonProps {
 
 export function UserButton({ session }: UserButtonProps) {
     const [isOpen, setIsOpen] = useState(false);
+    const [imageError, setImageError] = useState(false);
     const router = useRouter();
 
     if (!session?.user) return null;
 
     const handleLogout = () => {
-        setIsOpen(false);
         router.push("/api/auth/signout");
     };
+
+    // Log image URL for debugging
+    console.log("User image URL:", session?.user?.image);
 
     return (
         <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
             <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="relative h-8 w-8 rounded-full">
-                    {session.user.image ? (
-                        <div className="relative h-8 w-8 rounded-full overflow-hidden">
+                <Button variant="ghost" className="relative h-8 w-8 p-0 rounded-full">
+                    {session?.user?.image && !imageError ? (
+                        <div className="relative h-full w-full rounded-full overflow-hidden">
                             <Image
-                                src={session?.user?.image}
-                                alt={session?.user?.name || "User"}
-                                fill
-                                className="object-cover"
+                                src={session.user.image}
+                                alt={session.user.name || "User"}
+                                width={32}
+                                height={32}
+                                onError={() => setImageError(true)}
+                                style={{ objectFit: "cover" }}
                             />
                         </div>
                     ) : (
-                        <User className="h-4 w-4" />
+                        <div className="h-full w-full flex items-center justify-center bg-primary/10 rounded-full">
+                            <span className="text-xs font-medium text-primary">
+                                {session.user.name
+                                    ? session.user.name
+                                        .split(" ")
+                                        .map((n) => n[0])
+                                        .join("")
+                                        .toUpperCase()
+                                        .substring(0, 2)
+                                    : "U"}
+                            </span>
+                        </div>
                     )}
                 </Button>
             </DropdownMenuTrigger>
