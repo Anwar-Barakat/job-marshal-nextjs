@@ -10,32 +10,41 @@ import { useAuthStore } from "@/store/auth-store";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 
-const LoginForm = () => {
-    const { signIn, isLoading, error } = useAuthStore();
+const RegisterForm = () => {
+    const { signUp, isLoading, error } = useAuthStore();
     const router = useRouter();
+    const [name, setName] = useState("");
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [formError, setFormError] = useState("");
 
-    const handleEmailLogin = async (e: React.FormEvent) => {
+    const handleEmailRegister = async (e: React.FormEvent) => {
         e.preventDefault();
         setFormError("");
 
-        if (!email || !password) {
-            setFormError("Email and password are required");
+        if (!name || !email || !password) {
+            setFormError("All fields are required");
             return;
         }
 
         try {
-            await signIn("credentials", { email, password });
+            await signUp("credentials", { name, email, password });
         } catch (err) {
-            setFormError(err instanceof Error ? err.message : "Login failed");
+            setFormError(err instanceof Error ? err.message : "Registration failed");
         }
     };
 
     return (
         <div className="grid grid-cols-1 gap-6">
-            <form onSubmit={handleEmailLogin} className="space-y-4">
+            <form onSubmit={handleEmailRegister} className="space-y-4">
+                <FormInput
+                    label="Name"
+                    type="text"
+                    placeholder="Your full name"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    required
+                />
                 <FormInput
                     label="Email"
                     type="email"
@@ -47,7 +56,7 @@ const LoginForm = () => {
                 <FormInput
                     label="Password"
                     type="password"
-                    placeholder="Enter your password"
+                    placeholder="Create a password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required
@@ -56,7 +65,7 @@ const LoginForm = () => {
                     isLoading={isLoading}
                     error={formError}
                 >
-                    Login with Email
+                    Register with Email
                 </FormSubmit>
             </form>
 
@@ -76,13 +85,13 @@ const LoginForm = () => {
                     provider="GitHub"
                     icon={<GitHub />}
                     isLoading={isLoading}
-                    onClick={() => signIn("github")}
+                    onClick={() => signUp("github")}
                 />
                 <OAuthButton
                     provider="Google"
                     icon={<Google />}
                     isLoading={isLoading}
-                    onClick={() => signIn("google")}
+                    onClick={() => signUp("google")}
                 />
                 {error && !formError && (
                     <p className="text-sm text-destructive">{error}</p>
@@ -90,13 +99,13 @@ const LoginForm = () => {
             </div>
 
             <div className="text-center text-sm">
-                Don't have an account?{" "}
-                <Link href="/register" className="text-primary font-semibold hover:underline">
-                    Register
+                Already have an account?{" "}
+                <Link href="/login" className="text-primary font-semibold hover:underline">
+                    Login
                 </Link>
             </div>
         </div>
     );
 };
 
-export default LoginForm;
+export default RegisterForm; 
