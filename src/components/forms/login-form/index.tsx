@@ -1,60 +1,82 @@
 "use client";
 
-import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { GitHub, Google } from "@/components/icons";
 import { OAuthButton } from "@/components/ui/oauth-button";
-import { FormInput } from "@/components/shared/form-input";
+import { FormInput, ControlledFormInput } from "@/components/shared/form-input";
 import { FormSubmit } from "@/components/shared/form-submit";
 import { useAuthStore } from "@/store/auth-store";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { type LoginFormValues, loginSchema } from "./schema";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { loginAction } from "@/actions/auth";
+import { toast } from "sonner";
 
 const LoginForm = () => {
-    const { signIn, isLoading, error } = useAuthStore();
+    const { signIn, isLoading, error: authError, setIsLoading } = useAuthStore();
     const router = useRouter();
-    const [email, setEmail] = useState("");
-    const [password, setPassword] = useState("");
-    const [formError, setFormError] = useState("");
 
-    const handleEmailLogin = async (e: React.FormEvent) => {
-        e.preventDefault();
-        setFormError("");
+    const {
+        control,
+        handleSubmit,
+        formState: { errors },
+        setError,
+        clearErrors
+    } = useForm<LoginFormValues>({
+        defaultValues: {
+            email: "",
+            password: "",
+        },
+        resolver: zodResolver(loginSchema),
+        mode: "onChange"
+    });
 
-        if (!email || !password) {
-            setFormError("Email and password are required");
-            return;
-        }
-
+    const onSubmit = async (data: LoginFormValues) => {
         try {
-            await signIn("credentials", { email, password });
-        } catch (err) {
-            setFormError(err instanceof Error ? err.message : "Login failed");
+            setIsLoading(true);
+            const result = await loginAction(data);
+            if (result.success) {
+                toast.success("Login successful");
+            } else {
+                toast.error("Invalid credentials");
+            }
+            setIsLoading(false);
+        } catch (error) {
+            console.error(error);
+            toast.error("Invalid credentials");
         }
     };
 
+    // Get the root error message (could be from auth or other sources)
+    const rootErrorMessage = errors.root?.message || authError || undefined;
+
     return (
         <div className="grid grid-cols-1 gap-6">
-            <form onSubmit={handleEmailLogin} className="space-y-4">
-                <FormInput
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+                <ControlledFormInput
+                    name="email"
+                    control={control}
                     label="Email"
                     type="email"
                     placeholder="name@example.com"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
                     required
                 />
-                <FormInput
+
+                <ControlledFormInput
+                    name="password"
+                    control={control}
                     label="Password"
                     type="password"
                     placeholder="Enter your password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
                     required
                 />
+
                 <FormSubmit
                     isLoading={isLoading}
-                    error={formError}
+                    error={rootErrorMessage}
                 >
                     Login with Email
                 </FormSubmit>
@@ -84,9 +106,6 @@ const LoginForm = () => {
                     isLoading={isLoading}
                     onClick={() => signIn("google")}
                 />
-                {error && !formError && (
-                    <p className="text-sm text-destructive">{error}</p>
-                )}
             </div>
 
             <div className="text-center text-sm">

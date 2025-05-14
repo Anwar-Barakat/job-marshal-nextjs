@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { GuestLayout } from "@/layouts";
+import { Toaster as Sonner, Toaster } from 'sonner';
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -31,8 +32,10 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} min-h-screen bg-background font-sans antialiased`}
         suppressHydrationWarning
       >
+        <Toaster />
         <GuestLayout>{children}</GuestLayout>
       </body>
     </html>
   );
 }
+// pnpm dlx shadcn@latest add sonner

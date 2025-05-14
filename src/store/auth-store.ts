@@ -23,6 +23,7 @@ interface AuthState {
   signOut: () => Promise<void>;
   setUser: (user: User | null) => void;
   setError: (error: string | null) => void;
+  setIsLoading: (isLoading: boolean) => void;
 }
 
 export const useAuthStore = create<AuthState>((set) => ({
@@ -108,4 +109,5 @@ export const useAuthStore = create<AuthState>((set) => ({
   },
   setUser: (user) => set({ user }),
   setError: (error) => set({ error }),
+  setIsLoading: (isLoading) => set({ isLoading }),
 }));

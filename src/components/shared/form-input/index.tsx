@@ -4,6 +4,8 @@ import * as React from "react";
 import { Input } from "../../ui/input";
 import { Label } from "../../ui/label";
 import { cn } from "@/lib/utils";
+import { Controller } from "react-hook-form";
+import type { Control, FieldPath, FieldValues } from "react-hook-form";
 
 interface FormInputProps extends React.InputHTMLAttributes<HTMLInputElement> {
     label?: string;
@@ -11,6 +13,7 @@ interface FormInputProps extends React.InputHTMLAttributes<HTMLInputElement> {
     helperText?: string;
 }
 
+// Base FormInput component (for direct use)
 export function FormInput({
     label,
     error,
@@ -57,5 +60,37 @@ export function FormInput({
                 </p>
             )}
         </div>
+    );
+}
+
+// Form controlled version that works with React Hook Form
+interface ControlledFormInputProps<
+    TFieldValues extends FieldValues = FieldValues,
+    TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>
+> extends Omit<FormInputProps, 'name' | 'value' | 'onChange' | 'onBlur' | 'ref'> {
+    control: Control<TFieldValues>;
+    name: TName;
+}
+
+export function ControlledFormInput<
+    TFieldValues extends FieldValues = FieldValues,
+    TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>
+>({
+    control,
+    name,
+    ...props
+}: ControlledFormInputProps<TFieldValues, TName>) {
+    return (
+        <Controller
+            control={control}
+            name={name}
+            render={({ field, fieldState }) => (
+                <FormInput
+                    {...props}
+                    {...field}
+                    error={fieldState.error?.message || props.error}
+                />
+            )}
+        />
     );
 } 
