@@ -112,7 +112,6 @@ export function Navbar() {
                     </div>
                 </div>
             </Container>
-            {/* Mobile menu */}
             <div
                 className={cn(
                     "sm:hidden border-t",

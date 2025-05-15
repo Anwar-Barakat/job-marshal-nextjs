@@ -1,5 +1,6 @@
 "use client";
 
+import { logoutAction } from "@/actions/auth";
 import { Button } from "@/components/ui/button";
 import {
     DropdownMenu,
@@ -32,8 +33,8 @@ export function UserButton({ session }: UserButtonProps) {
 
     if (!session?.user) return null;
 
-    const handleLogout = () => {
-        router.push("/api/auth/signout");
+    const handleLogout = async () => {
+        await logoutAction();
     };
 
     // Log image URL for debugging

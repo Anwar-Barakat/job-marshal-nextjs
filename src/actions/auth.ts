@@ -1,6 +1,6 @@
 "use server";
 
-import { auth, signIn } from "@/auth";
+import { auth, signIn, signOut } from "@/auth";
 import {
   type LoginFormValues,
   loginSchema,
@@ -74,4 +74,10 @@ export async function registerAction(data: RegisterFormValues) {
     console.error(error);
     return { success: false, message: "Failed to register user" };
   }
+}
+
+// logout
+export async function logoutAction() {
+  await signOut({ redirectTo: "/login" });
+  return { success: true, message: "Logged out successfully" };
 }
