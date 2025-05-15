@@ -1,5 +1,6 @@
 "use server";
 
+import { auth, signIn } from "@/auth";
 import {
   type LoginFormValues,
   loginSchema,
@@ -19,6 +20,28 @@ export async function loginAction(data: LoginFormValues) {
     }
 
     const { email, password } = result.data;
+
+    const user = await prisma.user.findUnique({
+      where: { email },
+    });
+    if (!user) {
+      return { success: false, message: "User not found" };
+    }
+
+    if (!user.password) {
+      return { success: false, message: "Invalid credentials" };
+    }
+
+    const isValid = await bcrypt.compare(password, user.password);
+    if (!isValid) {
+      return { success: false, message: "Invalid credentials" };
+    }
+
+    await signIn("credentials", {
+      email,
+      password,
+      redirect: false,
+    });
 
     return { success: true, message: "Login successful" };
   } catch (error) {
@@ -42,7 +65,9 @@ export async function registerAction(data: RegisterFormValues) {
       return { success: false, message: "User already exists" };
     }
     const hashedPassword = await bcrypt.hash(password, 10);
-    await prisma.user.create({ data: { name, email, password: hashedPassword } });
+    await prisma.user.create({
+      data: { name, email, password: hashedPassword },
+    });
 
     return { success: true, message: "User registered successfully" };
   } catch (error) {
