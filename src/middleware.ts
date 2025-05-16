@@ -7,6 +7,10 @@ const protectedRoutes = ["/profile"];
 
 const { auth: middleware } = NextAuth({
   ...authConfig,
+  session: {
+    strategy: "database",
+    maxAge: 30 * 24 * 60 * 60, // 30 days
+  },
 });
 
 export default middleware(async (req) => {

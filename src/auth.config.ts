@@ -11,13 +11,20 @@ export default {
     Github({
       clientId: process.env.GITHUB_ID,
       clientSecret: process.env.GITHUB_SECRET,
+      authorization: {
+        params: {
+          scope: "read:user user:email",
+        },
+      },
       profile(profile) {
-        console.log("GitHub profile:", profile);
+        console.log("GitHub profile raw data:", profile);
+
         return {
           id: profile.id.toString(),
           name: profile.name || profile.login,
           email: profile.email,
           image: profile.avatar_url,
+          emailVerified: new Date().toISOString(),
         };
       },
     }),
@@ -29,15 +36,19 @@ export default {
           prompt: "consent",
           access_type: "offline",
           response_type: "code",
+          scope:
+            "https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email",
         },
       },
       profile(profile) {
-        console.log("Google profile:", profile);
+        console.log("Google profile raw data:", profile);
+
         return {
           id: profile.sub,
           name: profile.name,
           email: profile.email,
           image: profile.picture,
+          emailVerified: new Date().toISOString(),
         };
       },
     }),
@@ -73,4 +84,8 @@ export default {
     }),
   ],
   debug: process.env.NODE_ENV === "development",
+  pages: {
+    signIn: "/login",
+    error: "/login",
+  },
 } satisfies NextAuthConfig;
