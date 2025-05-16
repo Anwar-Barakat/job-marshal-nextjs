@@ -1,8 +1,14 @@
-import { auth, auth as middleware } from "@/auth";
+import NextAuth from "next-auth";
 import { NextResponse } from "next/server";
+import authConfig from "./auth.config";
 
 const authRoutes = ["/login", "/register"];
 const protectedRoutes = ["/profile"];
+
+const { auth: middleware } = NextAuth({
+  ...authConfig,
+});
+
 export default middleware(async (req) => {
   const { pathname } = req.nextUrl;
   const isLoggedIn: boolean = Boolean(req.auth);
