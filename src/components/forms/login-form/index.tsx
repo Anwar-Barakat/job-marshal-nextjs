@@ -39,14 +39,15 @@ const LoginForm = () => {
             setIsLoading(true);
             const result = await loginAction(data);
             if (result.success) {
-                toast.success("Login successful");
+                toast.success(result.message);
+                router.push("/profile");
             } else {
-                toast.error("Invalid credentials");
+                toast.error(result.message);
             }
             setIsLoading(false);
         } catch (error) {
             console.error(error);
-            toast.error("Invalid credentials");
+            toast.error(error.message);
         }
     };
 
