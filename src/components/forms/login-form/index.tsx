@@ -2,7 +2,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { GitHub, Google } from "@/components/icons";
-import { OAuthButton } from "@/components/ui/oauth-button";
+import { OAuthButtons } from "@/components/ui/oauth-buttons";
 import { FormInput, ControlledFormInput } from "@/components/shared/form-input";
 import { FormSubmit } from "@/components/shared/form-submit";
 import { useAuthStore } from "@/store/auth-store";
@@ -12,11 +12,11 @@ import { type LoginFormValues, loginSchema } from "./schema";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { loginAction, oAuthLoginAction } from "@/actions/auth";
+import { loginAction } from "@/actions/auth";
 import { toast } from "sonner";
 
 const LoginForm = () => {
-    const { signIn, isLoading, error: authError, setIsLoading } = useAuthStore();
+    const { isLoading, isDisabled, error: authError, setIsLoading, setIsDisabled } = useAuthStore();
     const router = useRouter();
 
     const {
@@ -36,6 +36,7 @@ const LoginForm = () => {
 
     const onSubmit = async (data: LoginFormValues) => {
         try {
+            setIsDisabled(true);
             setIsLoading(true);
             const result = await loginAction(data);
             result.success ?
@@ -43,31 +44,16 @@ const LoginForm = () => {
                 toast.error(result.message);
 
             setIsLoading(false);
+            setIsDisabled(false);
         } catch (error: unknown) {
             console.error(error);
             toast.error(error instanceof Error ? error.message : "An error occurred");
+            setIsDisabled(false);
+            setIsLoading(false);
         }
     };
 
     const rootErrorMessage = errors.root?.message || authError || undefined;
-
-    const handleGithubLogin = async () => {
-        try {
-            await oAuthLoginAction("github");
-        } catch (error: unknown) {
-            const errorMessage = error instanceof Error ? error.message : "Failed to login with GitHub";
-            toast.error(errorMessage);
-        }
-    };
-
-    const handleGoogleLogin = async () => {
-        try {
-            await oAuthLoginAction("google");
-        } catch (error: unknown) {
-            const errorMessage = error instanceof Error ? error.message : "Failed to login with Google";
-            toast.error(errorMessage);
-        }
-    };
 
     return (
         <div className="grid grid-cols-1 gap-6">
@@ -78,6 +64,7 @@ const LoginForm = () => {
                     label="Email"
                     type="email"
                     placeholder="name@example.com"
+                    disabled={isDisabled}
                     required
                 />
 
@@ -88,11 +75,13 @@ const LoginForm = () => {
                     type="password"
                     placeholder="Enter your password"
                     required
+                    disabled={isDisabled}
                 />
 
                 <FormSubmit
                     isLoading={isLoading}
                     error={rootErrorMessage}
+                    disabled={isDisabled}
                 >
                     Login with Email
                 </FormSubmit>
@@ -110,16 +99,7 @@ const LoginForm = () => {
             </div>
 
             <div className="flex flex-wrap gap-2">
-                <OAuthButton
-                    provider="GitHub"
-                    icon={<GitHub />}
-                    onClick={() => handleGithubLogin()}
-                />
-                <OAuthButton
-                    provider="Google"
-                    icon={<Google />}
-                    onClick={() => handleGoogleLogin()}
-                />
+                <OAuthButtons />
             </div>
 
             <div className="text-center text-sm">

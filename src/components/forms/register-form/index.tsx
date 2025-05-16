@@ -2,20 +2,21 @@
 
 import { useState } from "react";
 import { GitHub, Google } from "@/components/icons";
-import { OAuthButton } from "@/components/ui/oauth-button";
+import { OAuthButtons } from "@/components/ui/oauth-buttons";
 import { FormInput } from "@/components/shared/form-input";
 import { FormSubmit } from "@/components/shared/form-submit";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { oAuthLoginAction, oAuthRegisterAction, registerAction } from "@/actions/auth";
+import { registerAction } from "@/actions/auth";
 import { toast } from "sonner";
+import { useAuthStore } from "@/store/auth-store";
 
 const RegisterForm = () => {
     const router = useRouter();
+    const { isLoading, isDisabled, setIsDisabled, setIsLoading } = useAuthStore();
     const [name, setName] = useState("");
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
-    const [isLoading, setIsLoading] = useState(false);
     const [formError, setFormError] = useState("");
 
     const handleEmailRegister = async (e: React.FormEvent) => {
@@ -28,6 +29,7 @@ const RegisterForm = () => {
         }
 
         try {
+            setIsDisabled(true);
             setIsLoading(true);
             const result = await registerAction({ name, email, password });
 
@@ -43,26 +45,8 @@ const RegisterForm = () => {
             setFormError(errorMessage);
             toast.error(errorMessage);
         } finally {
+            setIsDisabled(false);
             setIsLoading(false);
-        }
-    };
-
-
-    const handleGoogleRegister = async () => {
-        try {
-            await oAuthRegisterAction("google");
-        } catch (error: unknown) {
-            const errorMessage = error instanceof Error ? error.message : "Failed to login with Google";
-            toast.error(errorMessage);
-        }
-    };
-
-    const handleGithubRegister = async () => {
-        try {
-            await oAuthRegisterAction("github");
-        } catch (error: unknown) {
-            const errorMessage = error instanceof Error ? error.message : "Failed to login with GitHub";
-            toast.error(errorMessage);
         }
     };
 
@@ -76,6 +60,7 @@ const RegisterForm = () => {
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     required
+                    disabled={isDisabled}
                 />
                 <FormInput
                     label="Email"
@@ -84,6 +69,7 @@ const RegisterForm = () => {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
+                    disabled={isDisabled}
                 />
                 <FormInput
                     label="Password"
@@ -92,10 +78,12 @@ const RegisterForm = () => {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required
+                    disabled={isDisabled}
                 />
                 <FormSubmit
                     isLoading={isLoading}
                     error={formError}
+                    disabled={isDisabled}
                 >
                     Register with Email
                 </FormSubmit>
@@ -113,16 +101,7 @@ const RegisterForm = () => {
             </div>
 
             <div className="flex flex-wrap gap-2">
-                <OAuthButton
-                    provider="GitHub"
-                    icon={<GitHub />}
-                    onClick={handleGithubRegister}
-                />
-                <OAuthButton
-                    provider="Google"
-                    icon={<Google />}
-                    onClick={handleGoogleRegister}
-                />
+                <OAuthButtons />
             </div>
 
             <div className="text-center text-sm">
@@ -135,4 +114,4 @@ const RegisterForm = () => {
     );
 };
 
-export default RegisterForm; 
+export default RegisterForm;

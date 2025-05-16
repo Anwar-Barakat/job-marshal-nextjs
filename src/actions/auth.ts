@@ -12,6 +12,10 @@ import {
 import { prisma } from "@/utils/prisma";
 import bcrypt from "bcryptjs";
 import { redirect } from "next/navigation";
+import type {
+  GITHUB_PROVIDER,
+  GOOGLE_PROVIDER,
+} from "@/constants/auth.constants";
 
 export async function loginAction(data: LoginFormValues) {
   try {
@@ -85,38 +89,17 @@ export async function registerAction(data: RegisterFormValues) {
 }
 
 export async function logoutAction() {
-  // Clear the session without redirecting
   await signOut({ redirect: false });
-  // Then perform the redirect separately
   redirect("/login");
 }
 
-export async function oAuthLoginAction(provider: "github" | "google") {
+export async function oAuthActions(
+  provider: typeof GITHUB_PROVIDER | typeof GOOGLE_PROVIDER
+) {
   try {
-    await signIn(provider, { redirect: false });
-    return { success: true, message: `Logged in with ${provider}` };
+    await signIn(provider);
   } catch (error) {
-    console.error(error);
-    const errorMessage =
-      error instanceof Error ? error.message : "Unknown error";
-    return {
-      success: false,
-      message: `Failed to login with ${provider}: ${errorMessage}`,
-    };
-  }
-}
-
-export async function oAuthRegisterAction(provider: "github" | "google") {
-  try {
-    await signIn(provider, { redirect: false });
-    return { success: true, message: `Logged in with ${provider}` };
-  } catch (error) {
-    console.error(error);
-    const errorMessage =
-      error instanceof Error ? error.message : "Unknown error";
-    return {
-      success: false,
-      message: `Failed to login with ${provider}: ${errorMessage}`,
-    };
+    console.error("OAuth error (not redirect):", error);
+    throw error;
   }
 }

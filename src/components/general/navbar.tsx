@@ -7,6 +7,7 @@ import { ThemeToggle, UserButton, Logo } from "@/components/general";
 import { Container } from "@/components/ui/container";
 import { getSession } from "next-auth/react";
 import type { Session } from "next-auth";
+import { Menu, X } from "lucide-react";
 
 const navigation = [
     { name: "Home", href: "/" },
@@ -76,37 +77,9 @@ export function Navbar() {
                             aria-label="Toggle menu"
                         >
                             {!isMobileMenuOpen ? (
-                                <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    viewBox="0 0 24 24"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    strokeWidth={1.5}
-                                    className="h-5 w-5 sm:h-6 sm:w-6"
-                                    aria-hidden="true"
-                                >
-                                    <path
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"
-                                    />
-                                </svg>
+                                <Menu className="h-5 w-5 sm:h-6 sm:w-6" />
                             ) : (
-                                <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    viewBox="0 0 24 24"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    strokeWidth={1.5}
-                                    className="h-5 w-5 sm:h-6 sm:w-6"
-                                    aria-hidden="true"
-                                >
-                                    <path
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        d="M6 18L18 6M6 6l12 12"
-                                    />
-                                </svg>
+                                <X className="h-5 w-5 sm:h-6 sm:w-6" />
                             )}
                         </button>
                     </div>
