@@ -10,10 +10,12 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     strategy: "jwt",
   },
   callbacks: {
-    async jwt({ token, user, account }) {
+    async jwt({ token, user, account, profile }) {
       // Initial sign-in
-      if (user) {
+      if (account && user) {
+        console.log("JWT callback - Account:", account?.provider);
         token.id = user.id;
+        token.provider = account.provider;
       }
       return token;
     },
@@ -45,9 +47,14 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       return session;
     },
     async signIn({ user, account, profile }) {
-      // If the user exists but doesn't have an account with this provider, link the account
-      if (account && user) {
-        return true; // The adapter should handle account linking automatically
+      if (account && profile) {
+        console.log("Sign-in with provider:", account.provider);
+
+        // Make sure we have an email
+        if (!user.email) {
+          console.error("No email found from provider");
+          return false;
+        }
       }
       return true;
     },
@@ -58,6 +65,13 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     },
     linkAccount: async ({ user, account, profile }) => {
       console.log("Account linked:", user.email, account.provider);
+    },
+    signIn: async ({ user, account }) => {
+      console.log(
+        "User signed in:",
+        user.email,
+        account?.provider || "credentials"
+      );
     },
   },
 });

@@ -11,10 +11,35 @@ export default {
     Github({
       clientId: process.env.GITHUB_ID,
       clientSecret: process.env.GITHUB_SECRET,
+      profile(profile) {
+        console.log("GitHub profile:", profile);
+        return {
+          id: profile.id.toString(),
+          name: profile.name || profile.login,
+          email: profile.email,
+          image: profile.avatar_url,
+        };
+      },
     }),
     Google({
       clientId: process.env.GOOGLE_ID,
       clientSecret: process.env.GOOGLE_SECRET,
+      authorization: {
+        params: {
+          prompt: "consent",
+          access_type: "offline",
+          response_type: "code",
+        },
+      },
+      profile(profile) {
+        console.log("Google profile:", profile);
+        return {
+          id: profile.sub,
+          name: profile.name,
+          email: profile.email,
+          image: profile.picture,
+        };
+      },
     }),
     Credentials({
       async authorize(credentials) {
@@ -47,4 +72,5 @@ export default {
       },
     }),
   ],
+  debug: process.env.NODE_ENV === "development",
 } satisfies NextAuthConfig;

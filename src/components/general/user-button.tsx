@@ -16,6 +16,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
+import { signOut } from "next-auth/react";
 
 interface UserButtonProps {
     session: {
@@ -42,11 +43,14 @@ export function UserButton({ session }: UserButtonProps) {
             setIsOpen(false);
             toast.loading("Logging out...");
 
-            // Call the server action
+            // Use client-side signOut to immediately invalidate session
+            await signOut({ redirect: false });
+
+            // Then call the server action for any server-side cleanup
             await logoutAction();
 
-            // Force refresh after logout to update UI state
-            router.refresh();
+            // Redirect to login page
+            router.push("/login");
 
             toast.success("Logged out successfully");
         } catch (error) {

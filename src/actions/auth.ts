@@ -94,8 +94,8 @@ export async function registerAction(data: RegisterFormValues) {
 
 export async function logoutAction() {
   await signOut({ redirect: false });
-  // Server-side redirect to ensure full page refresh
-  redirect("/login");
+  // Don't redirect here as we're handling that client-side
+  return { success: true };
 }
 
 export async function oAuthActions(
