@@ -1,21 +1,21 @@
 "use client";
 
 import { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { GitHub, Google } from "@/components/icons";
 import { OAuthButton } from "@/components/ui/oauth-button";
 import { FormInput } from "@/components/shared/form-input";
 import { FormSubmit } from "@/components/shared/form-submit";
-import { useAuthStore } from "@/store/auth-store";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { oAuthLoginAction, oAuthRegisterAction, registerAction } from "@/actions/auth";
+import { toast } from "sonner";
 
 const RegisterForm = () => {
-    const { signUp, isLoading, error } = useAuthStore();
     const router = useRouter();
     const [name, setName] = useState("");
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
+    const [isLoading, setIsLoading] = useState(false);
     const [formError, setFormError] = useState("");
 
     const handleEmailRegister = async (e: React.FormEvent) => {
@@ -28,9 +28,41 @@ const RegisterForm = () => {
         }
 
         try {
-            await signUp("credentials", { name, email, password });
-        } catch (err) {
-            setFormError(err instanceof Error ? err.message : "Registration failed");
+            setIsLoading(true);
+            const result = await registerAction({ name, email, password });
+
+            if (result.success) {
+                toast.success(result.message);
+                router.push("/");
+            } else {
+                setFormError(result.message);
+                toast.error(result.message);
+            }
+        } catch (error: unknown) {
+            const errorMessage = error instanceof Error ? error.message : "Registration failed";
+            setFormError(errorMessage);
+            toast.error(errorMessage);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+
+    const handleGoogleRegister = async () => {
+        try {
+            await oAuthRegisterAction("google");
+        } catch (error: unknown) {
+            const errorMessage = error instanceof Error ? error.message : "Failed to login with Google";
+            toast.error(errorMessage);
+        }
+    };
+
+    const handleGithubRegister = async () => {
+        try {
+            await oAuthRegisterAction("github");
+        } catch (error: unknown) {
+            const errorMessage = error instanceof Error ? error.message : "Failed to login with GitHub";
+            toast.error(errorMessage);
         }
     };
 
@@ -84,18 +116,13 @@ const RegisterForm = () => {
                 <OAuthButton
                     provider="GitHub"
                     icon={<GitHub />}
-                    isLoading={isLoading}
-                    onClick={() => signUp("github")}
+                    onClick={handleGithubRegister}
                 />
                 <OAuthButton
                     provider="Google"
                     icon={<Google />}
-                    isLoading={isLoading}
-                    onClick={() => signUp("google")}
+                    onClick={handleGoogleRegister}
                 />
-                {error && !formError && (
-                    <p className="text-sm text-destructive">{error}</p>
-                )}
             </div>
 
             <div className="text-center text-sm">

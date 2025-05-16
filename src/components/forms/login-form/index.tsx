@@ -12,7 +12,7 @@ import { type LoginFormValues, loginSchema } from "./schema";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { loginAction } from "@/actions/auth";
+import { loginAction, oAuthLoginAction } from "@/actions/auth";
 import { toast } from "sonner";
 
 const LoginForm = () => {
@@ -38,21 +38,36 @@ const LoginForm = () => {
         try {
             setIsLoading(true);
             const result = await loginAction(data);
-            if (result.success) {
-                toast.success(result.message);
-                router.push("/profile");
-            } else {
+            result.success ?
+                toast.success(result.message) :
                 toast.error(result.message);
-            }
+
             setIsLoading(false);
-        } catch (error) {
+        } catch (error: unknown) {
             console.error(error);
-            toast.error(error.message);
+            toast.error(error instanceof Error ? error.message : "An error occurred");
         }
     };
 
-    // Get the root error message (could be from auth or other sources)
     const rootErrorMessage = errors.root?.message || authError || undefined;
+
+    const handleGithubLogin = async () => {
+        try {
+            await oAuthLoginAction("github");
+        } catch (error: unknown) {
+            const errorMessage = error instanceof Error ? error.message : "Failed to login with GitHub";
+            toast.error(errorMessage);
+        }
+    };
+
+    const handleGoogleLogin = async () => {
+        try {
+            await oAuthLoginAction("google");
+        } catch (error: unknown) {
+            const errorMessage = error instanceof Error ? error.message : "Failed to login with Google";
+            toast.error(errorMessage);
+        }
+    };
 
     return (
         <div className="grid grid-cols-1 gap-6">
@@ -98,14 +113,12 @@ const LoginForm = () => {
                 <OAuthButton
                     provider="GitHub"
                     icon={<GitHub />}
-                    isLoading={isLoading}
-                    onClick={() => signIn("github")}
+                    onClick={() => handleGithubLogin()}
                 />
                 <OAuthButton
                     provider="Google"
                     icon={<Google />}
-                    isLoading={isLoading}
-                    onClick={() => signIn("google")}
+                    onClick={() => handleGoogleLogin()}
                 />
             </div>
 

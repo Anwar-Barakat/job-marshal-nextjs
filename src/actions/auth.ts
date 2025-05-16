@@ -11,6 +11,7 @@ import {
 } from "@/components/forms/register-form/schema";
 import { prisma } from "@/utils/prisma";
 import bcrypt from "bcryptjs";
+import { redirect } from "next/navigation";
 
 export async function loginAction(data: LoginFormValues) {
   try {
@@ -69,6 +70,13 @@ export async function registerAction(data: RegisterFormValues) {
       data: { name, email, password: hashedPassword },
     });
 
+    // Auto login after registration
+    await signIn("credentials", {
+      email,
+      password,
+      redirect: false,
+    });
+
     return { success: true, message: "User registered successfully" };
   } catch (error) {
     console.error(error);
@@ -76,8 +84,39 @@ export async function registerAction(data: RegisterFormValues) {
   }
 }
 
-// logout
 export async function logoutAction() {
-  await signOut({ redirectTo: "/login" });
-  return { success: true, message: "Logged out successfully" };
+  // Clear the session without redirecting
+  await signOut({ redirect: false });
+  // Then perform the redirect separately
+  redirect("/login");
+}
+
+export async function oAuthLoginAction(provider: "github" | "google") {
+  try {
+    await signIn(provider, { redirect: false });
+    return { success: true, message: `Logged in with ${provider}` };
+  } catch (error) {
+    console.error(error);
+    const errorMessage =
+      error instanceof Error ? error.message : "Unknown error";
+    return {
+      success: false,
+      message: `Failed to login with ${provider}: ${errorMessage}`,
+    };
+  }
+}
+
+export async function oAuthRegisterAction(provider: "github" | "google") {
+  try {
+    await signIn(provider, { redirect: false });
+    return { success: true, message: `Logged in with ${provider}` };
+  } catch (error) {
+    console.error(error);
+    const errorMessage =
+      error instanceof Error ? error.message : "Unknown error";
+    return {
+      success: false,
+      message: `Failed to login with ${provider}: ${errorMessage}`,
+    };
+  }
 }

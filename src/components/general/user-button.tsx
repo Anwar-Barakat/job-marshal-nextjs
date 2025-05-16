@@ -36,10 +36,7 @@ export function UserButton({ session }: UserButtonProps) {
     const handleLogout = async () => {
         await logoutAction();
     };
-
-    // Log image URL for debugging
-    console.log("User image URL:", session?.user?.image);
-
+    
     return (
         <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
             <DropdownMenuTrigger asChild>
