@@ -1,12 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { ThemeToggle, UserButton, Logo } from "@/components/general";
 import { Container } from "@/components/ui/container";
-import { getSession } from "next-auth/react";
-import type { Session } from "next-auth";
+import { useSession } from "next-auth/react";
 import { Menu, X } from "lucide-react";
 
 const navigation = [
@@ -18,23 +17,8 @@ const navigation = [
 
 export function Navbar() {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-    const [session, setSession] = useState<Session | null>(null);
-    const [isLoading, setIsLoading] = useState(true);
-
-    useEffect(() => {
-        const fetchSession = async () => {
-            try {
-                const sessionData = await getSession();
-                setSession(sessionData);
-            } catch (error) {
-                console.error("Failed to fetch session:", error);
-            } finally {
-                setIsLoading(false);
-            }
-        };
-
-        fetchSession();
-    }, []);
+    const { data: session, status } = useSession();
+    const isLoading = status === "loading";
 
     return (
         <nav className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 shadow-sm">
@@ -60,7 +44,13 @@ export function Navbar() {
                             {isLoading ? (
                                 <div className="h-9 w-9 rounded-full bg-muted animate-pulse" />
                             ) : session?.user ? (
-                                <UserButton session={session as Session & { user: { name: string; email: string; image?: string } }} />
+                                <UserButton session={{
+                                    user: {
+                                        name: session.user.name || "",
+                                        email: session.user.email || "",
+                                        image: session.user.image || undefined
+                                    }
+                                }} />
                             ) : (
                                 <Link
                                     href="/login"

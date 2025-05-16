@@ -14,10 +14,12 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { loginAction } from "@/actions/auth";
 import { toast } from "sonner";
+import { useSession } from "next-auth/react";
 
 const LoginForm = () => {
     const { isLoading, isDisabled, error: authError, setIsLoading, setIsDisabled } = useAuthStore();
     const router = useRouter();
+    const { update: updateSession } = useSession();
 
     const {
         control,
@@ -42,6 +44,17 @@ const LoginForm = () => {
             result.success ?
                 toast.success(result.message) :
                 toast.error(result.message);
+
+            if (result.success) {
+                // Update session client-side
+                await updateSession();
+
+                // Redirect if provided
+                if (result.redirect) {
+                    router.push(result.redirect);
+                    router.refresh();
+                }
+            }
 
             setIsLoading(false);
             setIsDisabled(false);

@@ -48,7 +48,7 @@ export async function loginAction(data: LoginFormValues) {
       redirect: false,
     });
 
-    return { success: true, message: "Login successful" };
+    return { success: true, message: "Login successful", redirect: "/profile" };
   } catch (error) {
     console.error(error);
     return { success: false, message: "Invalid credentials" };
@@ -81,7 +81,11 @@ export async function registerAction(data: RegisterFormValues) {
       redirect: false,
     });
 
-    return { success: true, message: "User registered successfully" };
+    return {
+      success: true,
+      message: "User registered successfully",
+      redirect: "/profile",
+    };
   } catch (error) {
     console.error(error);
     return { success: false, message: "Failed to register user" };
@@ -90,6 +94,7 @@ export async function registerAction(data: RegisterFormValues) {
 
 export async function logoutAction() {
   await signOut({ redirect: false });
+  // Server-side redirect to ensure full page refresh
   redirect("/login");
 }
 

@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { GitHub, Google } from "@/components/icons";
 import { oAuthActions } from "@/actions/auth";
 import { toast } from "sonner";
-import { GITHUB_PROVIDER, GOOGLE_PROVIDER } from "@/constants/auth.costants";
+import { GITHUB_PROVIDER, GOOGLE_PROVIDER } from "@/constants/auth.constants";
 
 export function OAuthButtons() {
     const handleGoogleLogin = async () => {

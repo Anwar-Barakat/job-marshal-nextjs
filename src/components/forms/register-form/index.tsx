@@ -10,10 +10,12 @@ import Link from "next/link";
 import { registerAction } from "@/actions/auth";
 import { toast } from "sonner";
 import { useAuthStore } from "@/store/auth-store";
+import { useSession } from "next-auth/react";
 
 const RegisterForm = () => {
     const router = useRouter();
     const { isLoading, isDisabled, setIsDisabled, setIsLoading } = useAuthStore();
+    const { update: updateSession } = useSession();
     const [name, setName] = useState("");
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
@@ -35,7 +37,15 @@ const RegisterForm = () => {
 
             if (result.success) {
                 toast.success(result.message);
-                router.push("/");
+
+                // Update session client-side
+                await updateSession();
+
+                // Redirect if provided
+                if (result.redirect) {
+                    router.push(result.redirect);
+                    router.refresh();
+                }
             } else {
                 setFormError(result.message);
                 toast.error(result.message);

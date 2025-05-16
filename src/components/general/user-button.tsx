@@ -15,6 +15,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { toast } from "sonner";
 
 interface UserButtonProps {
     session: {
@@ -29,14 +30,33 @@ interface UserButtonProps {
 export function UserButton({ session }: UserButtonProps) {
     const [isOpen, setIsOpen] = useState(false);
     const [imageError, setImageError] = useState(false);
+    const [isLoggingOut, setIsLoggingOut] = useState(false);
     const router = useRouter();
 
     if (!session?.user) return null;
 
     const handleLogout = async () => {
-        await logoutAction();
+        try {
+            setIsLoggingOut(true);
+            // Close the dropdown
+            setIsOpen(false);
+            toast.loading("Logging out...");
+
+            // Call the server action
+            await logoutAction();
+
+            // Force refresh after logout to update UI state
+            router.refresh();
+
+            toast.success("Logged out successfully");
+        } catch (error) {
+            console.error("Logout error:", error);
+            toast.error("Failed to log out");
+        } finally {
+            setIsLoggingOut(false);
+        }
     };
-    
+
     return (
         <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
             <DropdownMenuTrigger asChild>
@@ -96,9 +116,10 @@ export function UserButton({ session }: UserButtonProps) {
                 <DropdownMenuItem
                     onClick={handleLogout}
                     className="flex items-center cursor-pointer text-destructive"
+                    disabled={isLoggingOut}
                 >
                     <LogOut className="mr-2 h-4 w-4" />
-                    Log out
+                    {isLoggingOut ? "Logging out..." : "Log out"}
                 </DropdownMenuItem>
             </DropdownMenuContent>
         </DropdownMenu>
