@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import { Footer, Navbar } from "@/components/general";
-import { ThemeProvider } from "@/components/providers/theme-provider";
+import { GuestLayout } from "@/layouts";
+import { Toaster } from 'sonner';
+import { AuthProvider } from "@/components/providers";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -28,20 +29,14 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body
         className={`${geistSans.variable} ${geistMono.variable} min-h-screen bg-background font-sans antialiased`}
+        suppressHydrationWarning
       >
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          enableSystem
-          disableTransitionOnChange
-        >
-          <div className="relative flex min-h-screen flex-col">
-            <Navbar />
-            <main className="flex-1">{children}</main>
-            <Footer />
-          </div>
-        </ThemeProvider>
+        <AuthProvider>
+          <Toaster />
+          <GuestLayout>{children}</GuestLayout>
+        </AuthProvider>
       </body>
     </html>
   );
 }
+// pnpm dlx shadcn@latest add sonner

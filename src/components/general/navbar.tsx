@@ -3,9 +3,10 @@
 import Link from "next/link";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
-import { ThemeToggle } from "@/components/ui/theme-toggle";
+import { ThemeToggle, UserButton, Logo } from "@/components/general";
 import { Container } from "@/components/ui/container";
-import { Logo } from "@/components/general/logo";
+import { useSession } from "next-auth/react";
+import { Menu, X } from "lucide-react";
 
 const navigation = [
     { name: "Home", href: "/" },
@@ -16,6 +17,9 @@ const navigation = [
 
 export function Navbar() {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+    const { data: session, status } = useSession();
+    const isLoading = status === "loading";
+
     return (
         <nav className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 shadow-sm">
             <Container>
@@ -37,12 +41,24 @@ export function Navbar() {
                     <div className="flex items-center gap-2 sm:gap-4">
                         <nav className="flex items-center space-x-2 sm:space-x-3">
                             <ThemeToggle />
-                            <Link
-                                href="/login"
-                                className="inline-flex h-9 sm:h-10 items-center justify-center rounded-md bg-primary px-3 sm:px-5 py-2 text-sm font-medium text-primary-foreground shadow-sm transition-all hover:bg-primary/90 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50"
-                            >
-                                Sign in
-                            </Link>
+                            {isLoading ? (
+                                <div className="h-9 w-9 rounded-full bg-muted animate-pulse" />
+                            ) : session?.user ? (
+                                <UserButton session={{
+                                    user: {
+                                        name: session.user.name || "",
+                                        email: session.user.email || "",
+                                        image: session.user.image || undefined
+                                    }
+                                }} />
+                            ) : (
+                                <Link
+                                    href="/login"
+                                    className="inline-flex h-9 sm:h-10 items-center justify-center rounded-md bg-primary px-3 sm:px-5 py-2 text-sm font-medium text-primary-foreground shadow-sm transition-all hover:bg-primary/90 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50"
+                                >
+                                    Sign in
+                                </Link>
+                            )}
                         </nav>
                         <button
                             type="button"
@@ -51,43 +67,14 @@ export function Navbar() {
                             aria-label="Toggle menu"
                         >
                             {!isMobileMenuOpen ? (
-                                <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    viewBox="0 0 24 24"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    strokeWidth={1.5}
-                                    className="h-5 w-5 sm:h-6 sm:w-6"
-                                    aria-hidden="true"
-                                >
-                                    <path
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"
-                                    />
-                                </svg>
+                                <Menu className="h-5 w-5 sm:h-6 sm:w-6" />
                             ) : (
-                                <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    viewBox="0 0 24 24"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    strokeWidth={1.5}
-                                    className="h-5 w-5 sm:h-6 sm:w-6"
-                                    aria-hidden="true"
-                                >
-                                    <path
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        d="M6 18L18 6M6 6l12 12"
-                                    />
-                                </svg>
+                                <X className="h-5 w-5 sm:h-6 sm:w-6" />
                             )}
                         </button>
                     </div>
                 </div>
             </Container>
-            {/* Mobile menu */}
             <div
                 className={cn(
                     "sm:hidden border-t",
